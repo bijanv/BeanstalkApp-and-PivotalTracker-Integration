@@ -2,7 +2,7 @@
 
 Now you can associate a GIT based commit from Beanstalk to a specific Pivotal Tracker story. Their commit messages will show up as comments on the Pivotal Tracker story and can even change the story state (see 'Use' below on how to format your commit messages).
 
-This script takes Beanstalk's web hooks integration data and formats it for Pivotal Tracker's SCM post-commit hook integration. It parses the Beanstalk JSON payload and sends the request to the Pivotal Tracker SCM API endpoint in the correctly formatted XML it requires.
+This PHP script takes Beanstalk's web hooks integration data and formats it for Pivotal Tracker's SCM post-commit hook integration. It parses the Beanstalk JSON payload and sends the request to the Pivotal Tracker SCM API endpoint in the correctly formatted XML it requires.
 
 ## Requirements
 
@@ -16,7 +16,7 @@ Place this script somewhere accessible on a server running PHP
 
 Add a Beanstalk post-commit hook pointing to the following url:
 
-    http://SCRIPT URL/commits.php
+    http://SCRIPT URL/commit.php
 
 Replace SCRIPT URL with the url of where the script is located.
 
