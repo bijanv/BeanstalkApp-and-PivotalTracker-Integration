@@ -13,16 +13,39 @@
 
 		//Grab the post-commit hook Beanstalkapp data
 		$json = str_replace('\"', '"', $_REQUEST['payload']); //Remove all the 'clean' formatting
+		$json = str_replace('\\\\n', '  ', $_REQUEST['payload']); //Pivotal doesn't deal with line breaks, so turn them into spaces
 		$json = json_decode($json, true); //Turn JSON into associative array
 
-		//Send seperate SCM commits for each commit made to beanstalk
-		foreach($json['commits'] as $commits){
+		//If 'commits' object exists - this is a GIT payload, otherwise parse for SVN payload
+		if(isset($json['commits'])){
+
+			//Send seperate SCM commits for each commit made to Beanstalk
+			foreach($json['commits'] as $commits){
+
+				//Format XML response needed for PivotalTracker
+				$dataToPOST = '<source_commit>';
+				$dataToPOST .= '<message>'.$commits['message'].'</message>';
+				$dataToPOST .= '<author>'.$commits['author']['name'].'</author>';
+				$dataToPOST .= '<commit_id>'.$commits['id'].'</commit_id>';
+				$dataToPOST .= '<url>'.$commits['url'].'</url>';
+				$dataToPOST .= '</source_commit>';
+
+				//Send Request to Pivotal Tracker
+				curl_setopt($curlRequest, CURLOPT_POSTFIELDS, $dataToPOST);
+
+				//If you care about recording the response back use $retVal below and print it to a log file
+				$retVal = curl_exec($curlRequest);
+
+			}
+
+		}else{
+
 			//Format XML response needed for PivotalTracker
 			$dataToPOST = '<source_commit>';
-			$dataToPOST .= '<message>'.$commits['message'].'</message>';
-			$dataToPOST .= '<author>'.$commits['author']['name'].'</author>';
-			$dataToPOST .= '<commit_id>'.$commits['id'].'</commit_id>';
-			$dataToPOST .= '<url>'.$commits['url'].'</url>';
+			$dataToPOST .= '<message>'.$json['message'].'</message>';
+			$dataToPOST .= '<author>'.$json['author_full_name'].'</author>';
+			$dataToPOST .= '<commit_id>'.$json['revision'].'</commit_id>';
+			$dataToPOST .= '<url>'.$json['changeset_url'].'</url>';
 			$dataToPOST .= '</source_commit>';
 
 			//Send Request to Pivotal Tracker
