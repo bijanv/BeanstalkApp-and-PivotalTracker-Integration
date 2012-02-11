@@ -14,11 +14,11 @@ Place this script somewhere accessible on a server running PHP
 
 ## Setup
 
-Add a Beanstalk post-commit hook pointing to the following url:
+It's recommended to put this script behind HTTP authentication. Once protected, add a Beanstalk post-commit hook pointing to the following url:
 
-    http://SCRIPT URL/commit.php
+    http://username:password@SCRIPT URL/commit.php
 
-Replace SCRIPT URL with the url of where the script is located.
+Replace SCRIPT URL with the url of where the script is located. 
 
 Open the commits.php and place your Pivotal Tracker API Token where it says:
 
