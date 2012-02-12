@@ -22,12 +22,38 @@
 			//Send seperate SCM commits for each commit made to Beanstalk
 			foreach($json['commits'] as $commits){
 
+				//Loose check for syntax Pivotal expects - no need to send request to Pivotal if not following proper SCM syntax
+				if(preg_match('/^\[*[A-Za-z]?[a-zA-Z0-9#\s]+\]*/', $commits['message'])){
+
+					//Format XML response needed for PivotalTracker
+					$dataToPOST = '<source_commit>';
+					$dataToPOST .= '<message>'.$commits['message'].'</message>';
+					$dataToPOST .= '<author>'.$commits['author']['name'].'</author>';
+					$dataToPOST .= '<commit_id>'.$commits['id'].'</commit_id>';
+					$dataToPOST .= '<url>'.$commits['url'].'</url>';
+					$dataToPOST .= '</source_commit>';
+
+					//Send Request to Pivotal Tracker
+					curl_setopt($curlRequest, CURLOPT_POSTFIELDS, $dataToPOST);
+
+					//If you care about recording the response back use $retVal below and print it to a log file
+					$retVal = curl_exec($curlRequest);
+
+				}
+
+			}
+
+		}else{
+
+			//Loose check for syntax Pivotal expects - no need to send request to Pivotal if not following proper SCM syntax
+			if(preg_match('/^\[*[A-Za-z]?[a-zA-Z0-9#\s]+\]*/', $json['message'])){
+
 				//Format XML response needed for PivotalTracker
 				$dataToPOST = '<source_commit>';
-				$dataToPOST .= '<message>'.$commits['message'].'</message>';
-				$dataToPOST .= '<author>'.$commits['author']['name'].'</author>';
-				$dataToPOST .= '<commit_id>'.$commits['id'].'</commit_id>';
-				$dataToPOST .= '<url>'.$commits['url'].'</url>';
+				$dataToPOST .= '<message>'.$json['message'].'</message>';
+				$dataToPOST .= '<author>'.$json['author_full_name'].'</author>';
+				$dataToPOST .= '<commit_id>'.$json['revision'].'</commit_id>';
+				$dataToPOST .= '<url>'.$json['changeset_url'].'</url>';
 				$dataToPOST .= '</source_commit>';
 
 				//Send Request to Pivotal Tracker
@@ -37,23 +63,6 @@
 				$retVal = curl_exec($curlRequest);
 
 			}
-
-		}else{
-
-			//Format XML response needed for PivotalTracker
-			$dataToPOST = '<source_commit>';
-			$dataToPOST .= '<message>'.$json['message'].'</message>';
-			$dataToPOST .= '<author>'.$json['author_full_name'].'</author>';
-			$dataToPOST .= '<commit_id>'.$json['revision'].'</commit_id>';
-			$dataToPOST .= '<url>'.$json['changeset_url'].'</url>';
-			$dataToPOST .= '</source_commit>';
-
-			//Send Request to Pivotal Tracker
-			curl_setopt($curlRequest, CURLOPT_POSTFIELDS, $dataToPOST);
-
-			//If you care about recording the response back use $retVal below and print it to a log file
-			$retVal = curl_exec($curlRequest);
-
 		}
 
 		curl_close($curlRequest);
